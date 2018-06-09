@@ -13,6 +13,10 @@ Some notes about vanity addresses:
 - The search may be case insensitive and will be a bit faster
 - The script runs on up to 10 cores in parallell for speeding things up
 
+Note: The author takes no responibility for the correctness of any generated
+keys. You are suggested to test the keys with a small amount of veo before
+committing to larger amounts.
+
 ## Running
 
 Clone the repo from Github, and run the script with
