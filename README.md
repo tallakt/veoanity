@@ -4,11 +4,13 @@ A simple script to generate either just regular private and public keys for
 Amoveo, or generate vanity keys where the public key contains some wanted
 characters.
 
-Some notes about vanity addresses:
+Some notes about the vanity addresses:
 
-- The first two characters of the public key are not used, and are in general
-  "B_", the first character a B and the other from a small selection. The
-  characters from the trird position and onwards are matched
+- The first two characters of the public key dont use the complete base64
+  alphabet.
+- The wanted characters are searched within the complete public key string
+- The characters "+" and "/" may be used to separate your word from the rest of
+  the public key
 - The process is slow: an hour perhaps for four letters matched
 - The search may be case insensitive and will be a bit faster
 - The script runs on up to 10 cores in parallell for speeding things up

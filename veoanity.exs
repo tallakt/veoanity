@@ -89,9 +89,9 @@ insensitive =
 
 regex =
   if insensitive do
-    Regex.compile!("^..#{pattern}", "i")
+    Regex.compile!("#{pattern}", "i")
   else
-    Regex.compile!("^..#{pattern}")
+    Regex.compile!("#{pattern}")
   end
 
 permutations = if insensitive do
@@ -108,7 +108,8 @@ Stream.iterate(H.generate_private_key, fn _ -> H.generate_private_key end)
 |> Stream.filter(fn priv -> Regex.match?(regex, H.public_key(priv)) end)
 |> Stream.run
 t1 = Time.utc_now
-avg_seconds = Time.diff(t1, t0, :milliseconds) / 1_000_000.0 * permutations / 2.0
+# first two characters in key are not using the complete alphabet and should not match in most cases
+avg_seconds = Time.diff(t1, t0, :milliseconds) / 1_000_000.0 * permutations / 2.0 / (86 - String.length(pattern))
 
 IO.puts "Expect this to take on average #{H.seconds_to_time_string avg_seconds} (on one core)"
 IO.puts ""
