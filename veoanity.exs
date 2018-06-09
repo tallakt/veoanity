@@ -37,6 +37,17 @@ defmodule H do
   def seconds_to_time_string(s) when s < 60*60, do: "#{s/60} min"
   def seconds_to_time_string(s) when s < 24*60*60, do: "#{s/3600} hrs"
   def seconds_to_time_string(s), do: "#{s/24/3600} days"
+
+  def loop do
+    receive do
+      {:key, k} ->
+        print_key_details(k)
+        IO.puts ""
+      _ ->
+        nil
+    end
+    loop()
+  end
 end
 
 
@@ -100,17 +111,18 @@ t1 = Time.utc_now
 avg_seconds = Time.diff(t1, t0, :milliseconds) / 1_000_000.0 * permutations / 2.0
 
 IO.puts "Expect this to take on average #{H.seconds_to_time_string avg_seconds} (on one core)"
+IO.puts ""
+
+main_process = self()
 
 for _ <- 1..10 do
   Task.async(fn ->
       Stream.iterate(H.generate_private_key, fn _ -> H.generate_private_key end)
       |> Stream.filter(fn priv -> Regex.match?(regex, H.public_key(priv)) end)
-      |> Stream.each(fn x -> H.print_key_details(x); IO.puts "" end)
+      |> Stream.each(fn x -> send(main_process, {:key, x}) end)
       |> Stream.run
     end)
 end
 
 # never end the task by itself
-receive do
-  :never -> nil
-end
+H.loop()
