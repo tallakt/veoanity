@@ -6,7 +6,9 @@ characters.
 
 Some notes about vanity addresses:
 
-- The characters are matched at the end of the public key, before the = sign
+- The first two characters of the public key are not used, and are in general
+  "B_", the first character a B and the other from a small selection. The
+  characters from the trird position and onwards are matched
 - The process is slow: an hour perhaps for four letters matched
 - The search may be case insensitive and will be a bit faster
 - The script runs on up to 10 cores in parallell for speeding things up

@@ -89,9 +89,9 @@ insensitive =
 
 regex =
   if insensitive do
-    Regex.compile!("#{pattern}=$", "i")
+    Regex.compile!("^..#{pattern}", "i")
   else
-    Regex.compile!("#{pattern}=$")
+    Regex.compile!("^..#{pattern}")
   end
 
 permutations = if insensitive do
