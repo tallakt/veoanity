@@ -12,6 +12,16 @@ defmodule H do
     |> Enum.join
   end
 
+  def generate_private_public_keys do
+    priv = generate_private_key()
+    case public_key(priv) do
+      {:ok, pub} ->
+        {priv, pub}
+      _ ->
+        generate_private_public_keys()
+    end
+  end
+
   def generate_private_key do
     :crypto.strong_rand_bytes(32)
   end
@@ -23,13 +33,18 @@ defmodule H do
   defp to_hex(i), do: Integer.to_string(i, 16)
 
   def public_key(private_key) do
-    {pub, _} = :crypto.generate_key(:ecdh, :crypto.ec_curve(:secp256k1), private_key)
-    Base.encode64(pub)
+    case :crypto.generate_key(:ecdh, :crypto.ec_curve(:secp256k1), private_key) do
+      {pub, _}  when is_binary(pub) -> 
+        {:ok, Base.encode64(pub)}
+      _ ->
+        {:error, "invalid private key"}
+    end
   end
 
   def print_key_details(private_key) do
+    {:ok, pub} = H.public_key(private_key)
     IO.puts "private key    #{H.bin_to_hex(private_key)}"
-    IO.puts "public key     #{H.public_key(private_key)}"
+    IO.puts "public key     #{pub}"
   end
 
   def seconds_to_time_string(s) when s < 100, do: "#{s} sec"
@@ -50,8 +65,6 @@ defmodule H do
 end
 
 
-
-:rand.seed :exs1024s
 
 IO.puts "Here are some fresh random keys and their public keys:"
 IO.puts "(For the Amoveo blockchain)"
@@ -102,9 +115,9 @@ permutations = if insensitive do
 
 # estimate discovery speed for 1000 keys
 t0 = Time.utc_now
-Stream.iterate(H.generate_private_key, fn _ -> H.generate_private_key end)
+Stream.iterate(H.generate_private_public_keys(), fn _ -> H.generate_private_public_keys() end)
 |> Enum.take(1000)
-|> Stream.filter(fn priv -> Regex.match?(regex, H.public_key(priv)) end)
+|> Stream.filter(fn {_, pub} -> Regex.match?(regex, pub) end)
 |> Stream.run
 t1 = Time.utc_now
 # first two characters in key are not using the complete alphabet and should not match in most cases
@@ -117,9 +130,9 @@ main_process = self()
 
 for _ <- 1..10 do
   Task.async(fn ->
-      Stream.iterate(H.generate_private_key, fn _ -> H.generate_private_key end)
-      |> Stream.filter(fn priv -> Regex.match?(regex, H.public_key(priv)) end)
-      |> Stream.each(fn x -> send(main_process, {:key, x}) end)
+    Stream.iterate(H.generate_private_public_keys(), fn _ -> H.generate_private_public_keys() end)
+      |> Stream.filter(fn {_, pub} -> Regex.match?(regex, pub) end)
+      |> Stream.each(fn {priv, _} -> send(main_process, {:key, priv}) end)
       |> Stream.run
     end)
 end
