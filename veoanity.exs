@@ -13,8 +13,7 @@ defmodule H do
   end
 
   def generate_private_key do
-    (for _ <- 1..32, do: :rand.uniform(255))
-    |> :binary.list_to_bin
+    :crypto.strong_rand_bytes(32)
   end
 
   defp to_hex(i) when i < 16 do
